@@ -61,7 +61,7 @@ public class Robot extends IterativeRobot {
 		//if(Controller.getXButtonPressed() && )
     	System.out.println("ArmsEncoder: " + ArmsEncoder.get());
     	
-    	Arms.setNeutralMode(Coast);
+    	
 	}
 
 }
