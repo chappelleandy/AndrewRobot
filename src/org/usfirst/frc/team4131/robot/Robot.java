@@ -28,9 +28,9 @@ public class Robot extends IterativeRobot {
 	WPI_TalonSRX DriveRight1 = new WPI_TalonSRX(2);
 	WPI_TalonSRX DriveRight2 = new WPI_TalonSRX(3);
 	WPI_TalonSRX Unused = new WPI_TalonSRX(4); // might be used later for something
-	WPI_TalonSRX Handler = new WPI_TalonSRX(5);
+	WPI_TalonSRX Handler = new WPI_TalonSRX(7);//used to be 5, swapped bc of 5/7 testing
 	WPI_TalonSRX Arms = new WPI_TalonSRX(6);
-	WPI_TalonSRX ArmsRoller = new WPI_TalonSRX(7);
+	WPI_TalonSRX ArmsRoller = new WPI_TalonSRX(5);
 	WPI_TalonSRX Launcher = new WPI_TalonSRX(8);
 
 	// Brake mode and Coast mode
@@ -58,46 +58,46 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		// Drive Function, takes controller input and outputs to Drive
-		myDrive.arcadeDrive(Controller.getY(LeftHand), Controller.getX(RightHand), false);
+		myDrive.arcadeDrive(-Controller.getY(LeftHand), Controller.getX(RightHand), false);
 
 		// Stow Arms
 		if (ArmSwitchAbsoluteStop.get()) { // Check limit switch
 			MoveArmToLimit = false;
 			Arms.set(0);
+			ArmsRoller.set(0);
 		} else if (MoveArmToLimit) { // Drive motor if the logic tells it to
-			Arms.set(-1);
-		} else if (Controller.getBButtonPressed()) { // if button pressed on controller, stop everything and retract
+			Arms.set(1);
+		} 
+		else if (Controller.getBButtonPressed() && !MoveArmToEncoder) { // if button pressed on controller, stop everything and retract
 			MoveArmToLimit = true;
 			ArmsRoller.set(0);
 			Handler.set(0);
 		}
-
+		System.out.println(ArmsEncoder.get() + " " + HandlerSwitch.get() + " " + MoveArmToEncoder);
 		// Intake boulder
-		if (Math.abs(ArmsEncoder.get()) >= 775 && Math.abs(ArmsEncoder.get()) <= 815) { // Check encoder value, and if its in the out range, spin ArmsRoller
+		if (ArmsEncoder.get() >= 795 && !MoveArmToLimit) { // Check encoder value, and if its in the out range, spin ArmsRoller
 			MoveArmToEncoder = false;
 			Arms.set(0);
-			ArmsRoller.set(1);
-			Handler.set(-1);
-			if (HandlerSwitch.get()) { // If the Boulder is triggering the handler switch, move arms back in and stop the roller and handler
+			ArmsRoller.set(-1);
+			Handler.set(1);
+			if (!HandlerSwitch.get()) { // If the Boulder is triggering the handler switch, move arms back in and stop the roller and handler
 				ArmsRoller.set(0);
 				Handler.set(0);
 				MoveArmToLimit = true;
 			}
 		} else if (MoveArmToEncoder) {
-			Arms.set(1);
-		} else if (Controller.getAButtonPressed()) {
+			Arms.set(-1);
+		} else if (Controller.getAButtonPressed() && !MoveArmToLimit) {
 			MoveArmToEncoder = true;
 		}
 
 		// Spit out Boulder
-		if (Controller.getYButtonPressed()) {
-			Handler.set(1);
-			if (Controller.getYButtonReleased()) {
-				Handler.set(0);
-			}
+		if (!Controller.getYButtonPressed() && Handler.get() != 0) {
+			Handler.set(0);
 		}
 
 		// Shooter speed cycle
+		/*
 		if (timer.hasPeriodPassed(.5)) {
 			if (Controller.getBumperPressed(LeftHand)) { // cycle through
 				Shooting++;
@@ -114,7 +114,7 @@ public class Robot extends IterativeRobot {
 				Launcher.set(.8);
 			}
 		}
-
+*/
 		// Shoot
 		if (Controller.getTriggerAxis(RightHand) > 0) { // maybe add check if shooter is spinning
 			Handler.set(-1);
