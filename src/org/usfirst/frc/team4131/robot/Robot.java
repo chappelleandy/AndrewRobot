@@ -116,12 +116,12 @@ public class Robot extends IterativeRobot {
 		}
 */
 		// Shoot
-		if (Controller.getTriggerAxis(RightHand) > 0) { // maybe add check if shooter is spinning
+		/*if (Controller.getTriggerAxis(RightHand) > 0) { // maybe add check if shooter is spinning
 			Handler.set(-1);
 			if (Controller.getTriggerAxis(RightHand) < 10) {
 				Handler.set(0);
 			}
-		}
+		}*/
 		
 		//Smart Dashboard Config OTF
 		
