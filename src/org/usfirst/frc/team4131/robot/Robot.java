@@ -17,8 +17,7 @@ public class Robot extends IterativeRobot {
 
 	// Declaration of Variables:
 	Timer timer;
-	// Hands are for the Xbox controller, the HIDGeneric Class requires indication
-	// of left or right for certain things
+	// Hands are for the Xbox controller, the HIDGeneric Class requires indication of left or right for certain things
 	Hand LeftHand = GenericHID.Hand.kLeft;
 	Hand RightHand = GenericHID.Hand.kRight;
 	XboxController Controller = new XboxController(0);
@@ -74,15 +73,12 @@ public class Robot extends IterativeRobot {
 		}
 
 		// Intake boulder
-		if (Math.abs(ArmsEncoder.get()) >= 775 && Math.abs(ArmsEncoder.get()) <= 815) { // Check encoder value, and if
-																						// its in the out range, spin
-																						// ArmsRoller
+		if (Math.abs(ArmsEncoder.get()) >= 775 && Math.abs(ArmsEncoder.get()) <= 815) { // Check encoder value, and if its in the out range, spin ArmsRoller
 			MoveArmToEncoder = false;
 			Arms.set(0);
 			ArmsRoller.set(1);
 			Handler.set(-1);
-			if (HandlerSwitch.get()) { // If the Boulder is triggering the handler switch, move arms back in and stop
-										// the roller and handler
+			if (HandlerSwitch.get()) { // If the Boulder is triggering the handler switch, move arms back in and stop the roller and handler
 				ArmsRoller.set(0);
 				Handler.set(0);
 				MoveArmToLimit = true;
@@ -102,7 +98,6 @@ public class Robot extends IterativeRobot {
 		}
 
 		// Shooter speed cycle
-		
 		if (timer.hasPeriodPassed(.5)) {
 			if (Controller.getBumperPressed(LeftHand)) { // cycle through
 				Shooting++;
@@ -119,13 +114,17 @@ public class Robot extends IterativeRobot {
 				Launcher.set(.8);
 			}
 		}
-		
+
 		// Shoot
 		if (Controller.getTriggerAxis(RightHand) > 0) { // maybe add check if shooter is spinning
 			Handler.set(-1);
-		} else {
-			Handler.set(0);
+			if (Controller.getTriggerAxis(RightHand) < 10) {
+				Handler.set(0);
+			}
 		}
+		
+		//Smart Dashboard Config OTF
+		
 	}
 
 }
