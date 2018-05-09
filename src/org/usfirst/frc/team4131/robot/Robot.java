@@ -48,7 +48,8 @@ public class Robot extends IterativeRobot {
 	Encoder ArmsEncoder = new Encoder(8, 9); // DIO 8 and 9 for the Arms motor
 	boolean MoveArmToEncoder;
 	Encoder ShooterEncoder = new Encoder(4, 5); // DIO 4 and 5 for the Shooter motor
-	int Shooting = 0;
+	int ShootingSpeed = 0;
+	boolean IsShooting;
 
 	// Limit Switches
 	DigitalInput ArmSwitchAbsoluteStop = new DigitalInput(7);
@@ -73,7 +74,7 @@ public class Robot extends IterativeRobot {
 			ArmsRoller.set(0);
 			Handler.set(0);
 		}
-		System.out.println(ArmsEncoder.get() + " " + HandlerSwitch.get() + " " + MoveArmToEncoder);
+
 		// Intake boulder
 		if (ArmsEncoder.get() >= 795 && !MoveArmToLimit) { // Check encoder value, and if its in the out range, spin ArmsRoller
 			MoveArmToEncoder = false;
@@ -92,38 +93,9 @@ public class Robot extends IterativeRobot {
 		}
 
 		// Spit out Boulder
-		if (!Controller.getYButtonPressed() && Handler.get() != 0) {
-			Handler.set(0);
+		if (Controller.getYButtonPressed()) {
+			Handler.set(1);
 		}
-
-		// Shooter speed cycle
-		/*
-		if (timer.hasPeriodPassed(.5)) {
-			if (Controller.getBumperPressed(LeftHand)) { // cycle through
-				Shooting++;
-			} else if (Shooting > 3) { // cycle back to 0
-				Shooting = 0;
-			}
-			if (Shooting == 0) {
-				Launcher.set(0);
-			} else if (Shooting == 1) {
-				Launcher.set(.4);
-			} else if (Shooting == 2) {
-				Launcher.set(.6);
-			} else if (Shooting == 3) {
-				Launcher.set(.8);
-			}
-		}
-*/
-		// Shoot
-		/*if (Controller.getTriggerAxis(RightHand) > 0) { // maybe add check if shooter is spinning
-			Handler.set(-1);
-			if (Controller.getTriggerAxis(RightHand) < 10) {
-				Handler.set(0);
-			}
-		}*/
-		
-		//Smart Dashboard Config OTF
 		
 	}
 
