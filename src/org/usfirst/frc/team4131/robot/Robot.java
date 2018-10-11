@@ -5,18 +5,15 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Timer;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
 
 	// Declaration of Variables:
-	Timer timer;
 	// Hands are for the Xbox controller, the HIDGeneric Class requires indication of left or right for certain things
 	Hand LeftHand = GenericHID.Hand.kLeft;
 	Hand RightHand = GenericHID.Hand.kRight;
@@ -27,11 +24,11 @@ public class Robot extends IterativeRobot {
 	WPI_TalonSRX DriveLeft2 = new WPI_TalonSRX(1);
 	WPI_TalonSRX DriveRight1 = new WPI_TalonSRX(2);
 	WPI_TalonSRX DriveRight2 = new WPI_TalonSRX(3);
-	WPI_TalonSRX Unused = new WPI_TalonSRX(4); // might be used later for something
-	WPI_TalonSRX Handler = new WPI_TalonSRX(7);//used to be 5, swapped bc of 5/7 testing
+	WPI_TalonSRX Launcher = new WPI_TalonSRX(4); // might be used later for something
+	WPI_TalonSRX Handler = new WPI_TalonSRX(5);//used to be 5, swapped bc of 5/7 testing
 	WPI_TalonSRX Arms = new WPI_TalonSRX(6);
-	WPI_TalonSRX ArmsRoller = new WPI_TalonSRX(5);
-	WPI_TalonSRX Launcher = new WPI_TalonSRX(8);
+	WPI_TalonSRX ArmsRoller = new WPI_TalonSRX(7);
+
 
 	// Brake mode and Coast mode
 	NeutralMode Brake = NeutralMode.Brake;
@@ -50,17 +47,22 @@ public class Robot extends IterativeRobot {
 	Encoder ShooterEncoder = new Encoder(4, 5); // DIO 4 and 5 for the Shooter motor
 	int ShootingSpeed = 0;
 	boolean IsShooting;
-
+	boolean spitOut;
 	// Limit Switches
 	DigitalInput ArmSwitchAbsoluteStop = new DigitalInput(7);
 	boolean MoveArmToLimit;
 	DigitalInput HandlerSwitch = new DigitalInput(6);
 
 	@Override
+	public void teleopInit() {
+		ArmsEncoder.reset();
+	}
+	
+	@Override
 	public void teleopPeriodic() {
 		// Drive Function, takes controller input and outputs to Drive
-		myDrive.arcadeDrive(-Controller.getY(LeftHand), Controller.getX(RightHand), false);
-
+		myDrive.arcadeDrive(-Controller.getY(LeftHand),  Controller.getX(RightHand), false);
+		
 		// Stow Arms
 		if (ArmSwitchAbsoluteStop.get()) { // Check limit switch
 			MoveArmToLimit = false;
@@ -68,8 +70,7 @@ public class Robot extends IterativeRobot {
 			ArmsRoller.set(0);
 		} else if (MoveArmToLimit) { // Drive motor if the logic tells it to
 			Arms.set(1);
-		} 
-		else if (Controller.getBButtonPressed() && !MoveArmToEncoder) { // if button pressed on controller, stop everything and retract
+		} else if (Controller.getBButtonPressed() && !MoveArmToEncoder) { // if button pressed on controller, stop everything and retract
 			MoveArmToLimit = true;
 			ArmsRoller.set(0);
 			Handler.set(0);
@@ -80,7 +81,7 @@ public class Robot extends IterativeRobot {
 			MoveArmToEncoder = false;
 			Arms.set(0);
 			ArmsRoller.set(-1);
-			Handler.set(1);
+			Handler.set(-1);
 			if (!HandlerSwitch.get()) { // If the Boulder is triggering the handler switch, move arms back in and stop the roller and handler
 				ArmsRoller.set(0);
 				Handler.set(0);
@@ -93,10 +94,34 @@ public class Robot extends IterativeRobot {
 		}
 
 		// Spit out Boulder
-		if (Controller.getYButtonPressed()) {
+		if (Controller.getYButtonReleased() && !IsShooting) {
+			Handler.set(0);	
+			spitOut = false;
+		} else if (Controller.getYButtonPressed() && !IsShooting) {
+			spitOut = true;
+		} if (spitOut && !IsShooting) {
 			Handler.set(1);
 		}
 		
+		if (Controller.getTriggerAxis(RightHand) < 0.2 && !spitOut) {
+			Handler.set(0);
+			IsShooting = false;
+		} else if (Controller.getTriggerAxis(RightHand) >= 0.2 && !spitOut) {
+			IsShooting = true;
+		} if (IsShooting && !spitOut) {
+			Handler.set(-1);
+		}
+		
+		if(Controller.getPOV() != -1) {
+			if(Controller.getPOV() == 0) {
+				Launcher.set(1);			} 
+			if(Controller.getPOV() == 180) {
+				Launcher.set(0);
+			}
+			if(Controller.getPOV() == 270) {
+				Launcher.set(.7);
+			}
+		}
+		
 	}
-
 }
